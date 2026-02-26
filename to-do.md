@@ -2,12 +2,9 @@
 - **fix bottom of album covers** - the center pane's album cover will have square bottoms and round tops. also, when flipping, rounded sides disappear
 - **fix crossplay funkyness** - sometimes the track will be skipped, cut, not overlap, and more.
 - **fix random stopping** - the tracks tend to randomly mute and a page refresh is required...losing the queue
-- **add drop shadow on text** - add back the dropdown shadow from the album cover on the title only in fullscreen mode
-- **add OS compatibilty** - allow the browser and/or OS to use built in skip and back functions, as well as star button IF possible
 - **add native volume slider** - add a volume slider for the just now playing content
-- **add anti-epelipsy setting** - when on, disables the reactive background
-- **discord rich presence support** - wrap it in electron or somehow figure out how to get the web browser to open the required websocket if possible
 - **algorithm updates** - ensure alg is not just based on current song when initialized...also based on all the other songs in the queue
+- **last.fm support** - add code to allow audia to support scrobbling to last.fm, for the discord presence mostly
 
 ---
 
