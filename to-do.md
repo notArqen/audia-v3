@@ -1,0 +1,4 @@
+- **fix lossless badge** - lossless will be shown regardless of if the track playing is truly lossless
+- **fix bottom of album covers** - the center pane's album cover will have square bottoms and round tops. also, when flipping, rounded sides disappear
+- **fix crossplay funkyness** - sometimes the track will be skipped, cut, not overlap, and more.
+- **fix random stopping** - the tracks tend to randomly mute and a page refresh is required...losing the queue
