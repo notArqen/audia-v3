@@ -2,10 +2,9 @@
 
 > a sleek, single-file web player that streams music via the Tidal API — no app, no install, just open and play.
 
----
 
-<!-- SCREENSHOT: Full app overview — desktop layout showing sidebar, now-playing center, and queue panel -->
-![audia desktop overview](./screenshots/desktop-overview.png)
+> [!CAUTION]
+> Note that the use of Audia is illegal if you do not possess an active and subscribed Tidal account. This software leverages audio from Tidal.
 
 ---
 
@@ -13,7 +12,6 @@
 
 - [overview](#overview)
 - [features](#features)
-- [screenshots](#screenshots)
 - [getting started](#getting-started)
 - [usage](#usage)
 - [themes](#themes)
@@ -57,11 +55,11 @@ the layout is a three-column desktop design: a left sidebar for search and playl
 ### playlists
 - create and name custom playlists
 - built-in **Favorited Songs** playlist
-- add tracks to any playlist directly from search results or now-playing
+- add tracks to any playlist directly from search results or now-playing via the star
 - playlist management panel overlaid in the main view
 
 ### taste profile
-- star tracks to add them to a personal taste profile
+- heart tracks to add them to a personal taste profile
 - used to seed autoplay recommendations
 
 ### fullscreen mode
@@ -76,12 +74,12 @@ the layout is a three-column desktop design: a left sidebar for search and playl
 - all themes are CSS variable-based — smooth transitions on switch
 
 ### equalizer
-- multi-band EQ with visual sliders
+- seven-band EQ with visual sliders
 - preset profiles (e.g. bass boost, vocal, flat, etc.)
 - EQ values persist across sessions
 
 ### cover art controls
-- toggle album art visibility globally (useful if you just want the clean minimal look)
+- toggle album art visibility globally
 - option to hide explicit badges alongside covers
 
 ### mobile support
@@ -92,53 +90,9 @@ the layout is a three-column desktop design: a left sidebar for search and playl
 
 ---
 
-## screenshots
-
-### desktop — now playing
-<!-- SCREENSHOT: Center now-playing panel with album art, blurred background, title/artist/album info, and quality badge -->
-![now playing](./screenshots/now-playing.png)
-
----
-
-### desktop — search results
-<!-- SCREENSHOT: Left sidebar with search input filled and results showing track list with album thumbs, artist names, durations, and add buttons -->
-![search results](./screenshots/search-results.png)
-
----
-
-### desktop — queue panel
-<!-- SCREENSHOT: Right-side queue panel showing a list of queued tracks with the currently playing one highlighted with the accent-colored left border -->
-![queue panel](./screenshots/queue-panel.png)
-
----
-
-### settings panel — themes & EQ
-<!-- SCREENSHOT: Settings panel open showing the theme color swatches grid and EQ band sliders below it -->
-![settings and themes](./screenshots/settings-themes-eq.png)
-
----
-
-### fullscreen mode
-<!-- SCREENSHOT: Fullscreen overlay showing large album art centered, dynamic blurred background, big title text, and bottom controls bar -->
-![fullscreen mode](./screenshots/fullscreen.png)
-
----
-
-### mobile layout
-<!-- SCREENSHOT: Mobile view showing the tabbed bottom nav, now-playing tab with album art and controls, compact player bar -->
-![mobile layout](./screenshots/mobile.png)
-
----
-
-### theme showcase
-<!-- SCREENSHOT: Side-by-side or collage of several themes (e.g. neon, amber, frost, grape) to show the range -->
-![theme showcase](./screenshots/themes-showcase.png)
-
----
-
 ## getting started
 
-since audia is a single HTML file, setup is about as complicated as double-clicking a file.
+since audia is a single HTML file, setup is about as complicated as double-clicking your cat picture folders.
 
 ### prerequisites
 - a modern browser (Chrome, Firefox, Edge, Safari — anything from the last 3 years)
@@ -149,8 +103,8 @@ since audia is a single HTML file, setup is about as complicated as double-click
 
 ```bash
 # clone the repo
-git clone https://github.com/yourusername/audia.git
-cd audia
+git clone https://github.com/AirSofft/audia-v3
+cd audia-v3
 
 # open the file — that's it
 open audia.html
@@ -233,7 +187,7 @@ the settings panel (gear icon) gives access to:
 - **hide explicit with covers** — optionally suppress explicit badges when covers are hidden
 - **API management** — view and configure which Tidal API endpoints audia uses, with automatic failover if one goes down
 
-all settings are saved automatically to `localStorage` under the key `audia_settings`.
+all settings are saved automatically to `localStorage` under the key `audia_settings`. more to come.
 
 ---
 
