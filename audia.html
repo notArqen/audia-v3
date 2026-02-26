@@ -598,7 +598,7 @@
       inset: -40px;
       background-size: cover;
       background-position: center;
-      filter: blur(35px) saturate(1.8);
+      filter: blur(40px) saturate(1.8);
       opacity: 0.38;
       transform: scale(1.3);
       pointer-events: none;
@@ -669,7 +669,7 @@
     .album-art {
       width: 220px;
       height: 220px;
-      border-radius: 14px;
+      border-radius: 14px 14px 0 0;
       object-fit: cover;
       background: var(--surface2);
       box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -764,7 +764,7 @@
     }
 
     .quality-badge {
-      display: none;
+      display: inline-flex;
       align-items: center;
       gap: 5px;
       margin-top: 10px;
@@ -1800,7 +1800,6 @@
       backface-visibility: hidden;
       border-radius: inherit;
       z-index: 2;
-      border-radius: inherit;
       overflow: hidden;
     }
 
@@ -1819,7 +1818,6 @@
       gap: 20px;
       box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
       z-index: 1;
-      border-radius: inherit;
       overflow: hidden;
     }
 
@@ -2025,6 +2023,7 @@
       letter-spacing: -1px;
       line-height: 1.1;
       margin-bottom: 10px;
+      text-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
     }
 
     .fullscreen-artist {
@@ -2637,6 +2636,14 @@
           <label class="toggle-switch"><input type="checkbox" id="toggleHideExplicit" checked><span
               class="toggle-track"></span></label>
         </div>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="stl-label">anti-epilepsy</div>
+            <div class="stl-sub">disables the reactive background pulsing</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="toggleAntiEpilepsy"><span
+              class="toggle-track"></span></label>
+        </div>
       </div>
       <div class="settings-section" style="margin-top:18px;">
         <div class="settings-section-title">equalizer</div>
@@ -2813,6 +2820,15 @@
 
       function tick() {
         beatRafId = requestAnimationFrame(tick);
+
+        if (antiEpilepsyMode) {
+          bgBlur.style.transform = 'scale(1.3)';
+          bgBlur.style.opacity = '0.38';
+          fsBg.style.transform = 'scale(1.4)';
+          fsBg.style.opacity = '0.55';
+          return;
+        }
+
         analyser.getByteFrequencyData(beatBuf);
 
         // 44100Hz / 2048 = 21.5Hz per bin
@@ -2945,6 +2961,7 @@
     //  SETTINGS
     // ══════════════════════════════════════════════════════
     let hideExplicitWithCovers = true;
+    let antiEpilepsyMode = false;
 
     function openSettings() {
       document.getElementById('settingsPanel').classList.add('open');
@@ -2961,6 +2978,10 @@
     document.getElementById('toggleHideExplicit').addEventListener('change', e => {
       hideExplicitWithCovers = e.target.checked;
       updateCoversHiddenClass();
+    });
+
+    document.getElementById('toggleAntiEpilepsy').addEventListener('change', e => {
+      antiEpilepsyMode = e.target.checked;
     });
 
     // ══════════════════════════════════════════════════════
@@ -3167,6 +3188,43 @@
       setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, dur);
     }
 
+    // Discord RPC Helper
+    async function updateRPC() {
+      if (!queue || !queue.length || queueIdx < 0) return;
+
+      const track = queue[queueIdx];
+      if (!track) return;
+
+      const title = track.title || 'Unknown Track';
+      const artist = artistName(track);
+      const album = track.album?.title || 'Unknown Album';
+
+      // Try to pass raw URL to Discord. If it doesn't work out of the box with the RPC library, 
+      // the user will need to configure asset keys, but the instruction asks to use raw URLs.
+      const albumArtUrl = coverUrl(track.album?.cover);
+
+      const currentTime = audio.currentTime || 0;
+      const duration = audio.duration || 0;
+
+      try {
+        await fetch('http://localhost:6969/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            artist,
+            album,
+            albumArtUrl,
+            currentTime,
+            duration,
+            isPlaying: isPlaying
+          })
+        });
+      } catch (err) {
+        // Fail silently if companion server isn't running
+      }
+    }
+
     // ══════════════════════════════════════════════════════
     //  STATE
     // ══════════════════════════════════════════════════════
@@ -3183,6 +3241,7 @@
         vol: document.getElementById('volSlider').value,
         speed: document.getElementById('speedSlider') ? document.getElementById('speedSlider').value : 1,
         hideExplicit: hideExplicitWithCovers,
+        antiEpilepsy: antiEpilepsyMode,
         coversHidden: coversHidden,
         isShuffle: isShuffle,
         isAutoplay: isAutoplay,
@@ -3455,9 +3514,10 @@
       try {
         await audio.play();
         setPlayState(true);
+        updateRPC();
         const badge = document.getElementById('qualityBadge');
-        badge.style.display = 'inline-flex';
-        badge.textContent = '◆ ' + (usedQuality || 'FLAC').toUpperCase();
+        // Force LOSSLESS
+        badge.textContent = '◆ LOSSLESS';
       } catch (e) {
         if (e.name !== 'AbortError' && !e.message.includes('interrupted')) {
           toast('playback error: ' + e.message, 'error');
@@ -3490,12 +3550,27 @@
         const bt = document.getElementById('barThumb');
         bt.src = cover; bt.style.display = 'block';
       }
+
+      // Update OS MediaSession
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: track.title || 'Unknown Track',
+          artist: artist,
+          album: track.album?.title || 'Unknown Album',
+          artwork: [
+            { src: cover || '', sizes: '512x512', type: 'image/jpeg' }
+          ]
+        });
+      }
+
+      updateRPC();
     }
 
     function setPlayState(playing) {
       isPlaying = playing;
       ['playIcon', 'fsPlayIcon'].forEach(id => document.getElementById(id).style.display = playing ? 'none' : 'block');
       ['pauseIcon', 'fsPauseIcon'].forEach(id => document.getElementById(id).style.display = playing ? 'block' : 'none');
+      updateRPC();
     }
 
     // ══════════════════════════════════════════════════════
@@ -3553,6 +3628,15 @@
       document.getElementById('totalTime').textContent = fmtTime(audio.duration);
       document.getElementById('fsCurrentTime').textContent = fmtTime(audio.currentTime);
       document.getElementById('fsTotalTime').textContent = fmtTime(audio.duration);
+
+      // Update RPC every ~15 seconds while playing
+      if (Math.floor(audio.currentTime) !== 0 && Math.floor(audio.currentTime) % 15 === 0 && !audio.paused) {
+        // Prevent calling `updateRPC` multiple times per exact second frame
+        if (window._lastRpcUpdate !== Math.floor(audio.currentTime)) {
+          window._lastRpcUpdate = Math.floor(audio.currentTime);
+          updateRPC();
+        }
+      }
     });
     audio.addEventListener('ended', () => {
       setPlayState(false);
@@ -3663,6 +3747,25 @@
     document.getElementById('clearQueueBtn').addEventListener('click', clearQueue);
     document.getElementById('mClearQueueBtn').addEventListener('click', clearQueue);
 
+    // Setup MediaSession handlers
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => { if (!isPlaying) document.getElementById('playPauseBtn').click(); });
+      navigator.mediaSession.setActionHandler('pause', () => { if (isPlaying) document.getElementById('playPauseBtn').click(); });
+      navigator.mediaSession.setActionHandler('previoustrack', () => document.getElementById('prevBtn').click());
+      navigator.mediaSession.setActionHandler('nexttrack', () => document.getElementById('nextBtn').click());
+      try {
+        navigator.mediaSession.setActionHandler('seekto', (details) => {
+          if (details.fastSeek && 'fastSeek' in audio) {
+            audio.fastSeek(details.seekTime);
+          } else {
+            audio.currentTime = details.seekTime;
+          }
+        });
+      } catch (error) {
+        // seekto not supported
+      }
+    }
+
     // ══════════════════════════════════════════════════════
     //  MOBILE TABS
     // ══════════════════════════════════════════════════════
@@ -3693,6 +3796,10 @@
         if (s.hideExplicit !== undefined) {
           hideExplicitWithCovers = s.hideExplicit;
           document.getElementById('toggleHideExplicit').checked = hideExplicitWithCovers;
+        }
+        if (s.antiEpilepsy !== undefined) {
+          antiEpilepsyMode = s.antiEpilepsy;
+          document.getElementById('toggleAntiEpilepsy').checked = antiEpilepsyMode;
         }
         if (s.coversHidden !== undefined) {
           coversHidden = s.coversHidden;
