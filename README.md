@@ -19,6 +19,7 @@
 - [keyboard & controls](#keyboard--controls)
 - [technical notes](#technical-notes)
 - [license](#license)
+- [known bugs](#bugs)
 
 ---
 
@@ -220,6 +221,14 @@ all settings are saved automatically to `localStorage` under the key `audia_sett
 
 ---
 
+## bugs
+
+- **album art, title, and various details can disappear**  - this can happen in the center pane after interacting with another object that is able to obscure the center pane.
+- **crossfade is funky**  - crossfade can act up, change volume, or skip a song altogether
+- **playRequest error** - when automatically proceding to the next song in the queue, the player may skip a song.
+
+
+---
 ## license
 
 © audia project. all rights reserved.
