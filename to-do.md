@@ -6,6 +6,7 @@
 - **add OS compatibilty** - allow the browser and/or OS to use built in skip and back functions, as well as star button IF possible
 - **add native volume slider** - add a volume slider for the just now playing content
 - **add anti-epelipsy setting** - when on, disables the reactive background
+- **discord rich presence support** - wrap it in electron or somehow figure out how to get the web browser to open the required websocket if possible
 
 ---
 
