@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>audia — splash preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0e0e0e;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #splash {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .splash-word {
+      display: flex;
+      align-items: baseline;
+      gap: 1px;
+    }
+
+    .splash-letter {
+      font-family: 'Syne', sans-serif;
+      font-size: 72px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      color: #2a2a2a;
+      display: inline-block;
+      transition:
+        color 0.35s ease,
+        text-shadow 0.35s ease,
+        transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.35s ease;
+      opacity: 1;
+      transform: scale(1) translateY(0px);
+      will-change: transform, color, text-shadow;
+      position: relative;
+    }
+
+    /* active — the lit letter */
+    .splash-letter.active {
+      color: #ffffff;
+      text-shadow:
+        0 0 18px rgba(255,255,255,0.55),
+        0 0 40px rgba(200,200,200,0.25);
+      transform: scale(1.12) translateY(-2px);
+    }
+
+    /* passed — settled, slightly lit */
+    .splash-letter.passed {
+      color: #b0b0b0;
+      text-shadow: none;
+      transform: scale(1) translateY(0px);
+    }
+
+    /* final resting state after full sweep */
+    .splash-letter.rest {
+      color: #e8e8e8;
+      text-shadow: none;
+      transform: scale(1) translateY(0px);
+      transition: color 0.5s ease, text-shadow 0.5s ease, transform 0.5s ease;
+    }
+
+    .splash-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 5px;
+      color: #383838;
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.7s ease, transform 0.7s ease, color 0.7s ease;
+    }
+
+    .splash-sub.show {
+      opacity: 1;
+      transform: translateY(0);
+      color: #444;
+    }
+
+    /* replay button */
+    .replay-btn {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #333;
+      background: none;
+      border: 1px solid #222;
+      padding: 8px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.5s ease, color 0.2s, border-color 0.2s;
+    }
+    .replay-btn:hover { color: #888; border-color: #444; }
+    .replay-btn.show { opacity: 1; }
+
+    /* snippet panel */
+    .snippet-panel {
+      position: fixed;
+      bottom: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: #333;
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      white-space: nowrap;
+    }
+    .snippet-panel.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-word" id="splashWord"></div>
+  <div class="splash-sub" id="splashSub">powered by audia</div>
+</div>
+
+<div class="snippet-panel" id="snippetHint">↑ paste snippet above &lt;/body&gt; in your app</div>
+<button class="replay-btn" id="replayBtn">↺ replay</button>
+
+<script>
+  const WORD = 'audia';
+  const LETTER_DELAY = 210;
+  const SETTLE_DELAY = 280;
+  const REST_DELAY = 400;
+  const FADE_SUB_DELAY = 200;
+
+  const container = document.getElementById('splashWord');
+  const sub = document.getElementById('splashSub');
+  const replayBtn = document.getElementById('replayBtn');
+  const snippetHint = document.getElementById('snippetHint');
+  let spans = [];
+  let animTimeout = null;
+
+  function buildLetters() {
+    container.innerHTML = '';
+    spans = [];
+    WORD.split('').forEach(ch => {
+      const s = document.createElement('span');
+      s.className = 'splash-letter';
+      s.textContent = ch;
+      container.appendChild(s);
+      spans.push(s);
+    });
+  }
+
+  function clearAllTimeouts() {
+    if (animTimeout) clearTimeout(animTimeout);
+  }
+
+  function reset() {
+    clearAllTimeouts();
+    sub.classList.remove('show');
+    replayBtn.classList.remove('show');
+    snippetHint.classList.remove('show');
+    buildLetters();
+  }
+
+  function animate() {
+    reset();
+
+    let i = 0;
+
+    function step() {
+      // dim previous
+      if (i > 0) {
+        spans[i - 1].classList.remove('active');
+        spans[i - 1].classList.add('passed');
+      }
+
+      if (i < spans.length) {
+        spans[i].classList.add('active');
+        i++;
+        animTimeout = setTimeout(step, LETTER_DELAY);
+      } else {
+        // last letter just lit — settle it
+        animTimeout = setTimeout(() => {
+          spans[spans.length - 1].classList.remove('active');
+          spans[spans.length - 1].classList.add('passed');
+
+          // all letters rest together
+          animTimeout = setTimeout(() => {
+            spans.forEach(s => {
+              s.classList.remove('active', 'passed');
+              s.classList.add('rest');
+            });
+
+            // show sub
+            animTimeout = setTimeout(() => {
+              sub.classList.add('show');
+
+              // show replay after sub settles
+              animTimeout = setTimeout(() => {
+                replayBtn.classList.add('show');
+                snippetHint.classList.add('show');
+              }, 1200);
+
+            }, FADE_SUB_DELAY);
+          }, REST_DELAY);
+        }, SETTLE_DELAY);
+      }
+    }
+
+    // small start delay for polish
+    animTimeout = setTimeout(step, 500);
+  }
+
+  replayBtn.addEventListener('click', animate);
+
+  // kick off on load
+  animate();
+</script>
+</body>
+</html>
