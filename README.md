@@ -1,6 +1,9 @@
-# audia · a tidal web player
+# audia · a tidal web player (broken)
 
-> a sleek, single-file web player that streams music via the Tidal API — no app, no install, just open and play.
+> [!WARNING]
+> **audia is currently broken.** tidal has changed things on their platform, and audia no longer works as described below. the rest of this readme documents how it worked before the breakage, and is kept for reference only. no fix is planned at the moment.
+
+> ~~a sleek, single-file web player that streams music via the Tidal API — no app, no install, just open and play.~~ *(was)* a single-file web player for tidal. currently non-functional.
 
 
 > [!CAUTION]
